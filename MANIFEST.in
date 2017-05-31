@@ -1,0 +1,2 @@
+recursive-include huerta/static *
+recursive-include huerta/templates *

@@ -1,0 +1,41 @@
+{% load i18n %}
+{% if changelist.model_admin.filters_collapsed %}{# NON-DEFAULT: to get this version, you need to customize the Filter and add the attribute #}
+  <div class="row">
+    <div class="col-md-2">
+      <label for="dropdown-filter-{{spec.parameter_name}}">{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</label>
+    </div>
+    <div class="col-md-3">
+      <div class="input-group-btn">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdown-filter-{{spec.parameter_name}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+          {% for choice in choices %}
+            {% if choice.selected %}
+              {# with multiselect we surround with >'s to visually separate multiple options #}
+              {% if choice.multiselect %}&lt;{%endif%}{{choice.display}}{% if choice.multiselect %}&gt;{%endif%}
+            {% endif %}
+          {% endfor %}
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdown-filter-{{spec.parameter_name}}">
+          {% for choice in choices %}
+          <li  {% if choice.selected and not choice.multiselect %}class="disabled"{% endif %}>
+            <a href="{{ choice.query_string|iriencode }}">
+              {% if choice.selected and choice.multiselect %}
+                <span class="text-danger">[x]</span>
+              {% endif %}
+              {{choice.display}}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="panel-body"><b>{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</b>
+    <ul class="list-group">
+      {% for choice in choices %}
+        <li class="list-group-item{% if choice.selected %} list-group-item-info{% endif %}">
+          <a href="{{ choice.query_string|iriencode }}">{{ choice.display }}</a></li>
+      {% endfor %}
+    </ul>
+{% endif %}

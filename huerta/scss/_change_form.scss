@@ -1,0 +1,40 @@
+.selector {
+  h2 {
+    margin-bottom: 0;
+  }
+}
+
+.form-row {
+  .checkbox {
+    input[type="checkbox"] {
+      position: inherit;
+      margin-left: inherit;
+    }
+  }
+}
+
+div.tabular.inline-related {
+  td {
+    padding: 8px;
+  }
+  tr.has_original {
+    td {
+      padding-top: 1.6em;
+    }
+  }
+  td.original {
+    padding: 2px 0 0 0;
+    width: 0;
+    position: relative;
+    p {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 1.5em;
+      padding: 2px 9px;
+      overflow: hidden;
+      font-size: 0.8em;
+      width: 10em;
+    }
+  }
+}

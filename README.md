@@ -22,7 +22,8 @@ Huerta allows each Django app to supply its own admin navigation links. To add l
 
 * Create a file in your app named `app_links.py` with a function named `app_links` that takes the request and returns relevant links wrapped in `<li>`, e.g.:
 
-```def app_links(request):
+```
+def app_links(request):
     user = request.user
     links = []
     if user.has_perm('special.permission'):

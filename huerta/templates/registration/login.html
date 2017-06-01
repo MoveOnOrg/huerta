@@ -1,0 +1,15 @@
+{% extends "base/base.html" %}
+{% load bootstrap %}
+
+{% block content %}
+{% if form.errors %}
+<p>Your username and password didn't match. Please try again.</p>
+{% endif %}
+<form method="post" class="form" action="{% url 'django.contrib.auth.views.login' %}">
+  {% csrf_token %}
+  {{ form | bootstrap }}
+  <p><input type="submit" value="login" class="btn btn-primary" /></p>
+  <input type="hidden" name="next" value="/" />
+</form>
+<div><a href="{% url 'django.contrib.auth.views.password_reset' %}">Forgot your password?</div>
+{% endblock %}

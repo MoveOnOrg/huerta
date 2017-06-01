@@ -1,0 +1,113 @@
+{% load i18n admin_static huerta %}
+<!DOCTYPE html>
+<!--[if IE 8]>     <html class="ie8"> <![endif]-->
+<!--[if IE 7]>     <html class="ie7"> <![endif]-->
+<!--[if IE 9]>     <html class="ie9"> <![endif]-->
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <title>{% if site_name %}{{site_name}} | {% endif %}{% block title %}{% endblock %}</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge;chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/site.css' %}" />
+  {% if extrastaticcss %}
+    {% for cssfile in extrastaticcss %}
+      <link rel="stylesheet" type="text/css" href="{% static cssfile %}" />
+    {% endfor %}
+  {% endif %}
+  <script src="//code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+  {% block stylesheets %}{% endblock %}
+  {% block extrastyle %}{% endblock %}
+  {% block extrahead %}{{extrahead|safe}}{% endblock %}
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+    {% block header %}
+            {% if not is_popup %}
+              <nav class="navbar navbar-default">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="navbar-header">
+                        <a class="navbar-brand" href="/"></a>
+                      </div>
+                      {% if user and user.is_authenticated %}
+                        <div class="navbar-text">
+                        {% trans 'Welcome,' %}
+                        <strong>{% firstof user.get_short_name user.get_username %}</strong>.
+                        </div>
+                      {% endif %}
+                      <ul class="nav navbar-nav navbar-right">
+                        {% for app in apps %}
+                          {{ app | app_links:request | safe }}
+                        {% endfor %}
+                        {% block userlinks %}
+                            {% if user.has_usable_password %}
+                            <li><a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a></li>
+                            {% endif %}
+                            {% if request.user.id %}
+                              <li><a href="{% url 'admin:logout' %}">{% trans 'Log out' %}</a></li>
+                            {% endif %}
+                        {% endblock %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </nav>
+            {% endif %}
+    {% endblock %}
+
+    <article class="{% block content-class %}{% endblock %}">
+
+        {% block breadcrumbs %}
+          <ol class="breadcrumb">
+            <li><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+            {% if title %}<li>{{ title }}</li>{% endif %}
+          </ol>
+        {% endblock %}
+
+        {% block messages %}
+            {% if messages %}
+                <ul class="alerts">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endblock %}
+
+        <div class="container" role="main">
+          <div class="row">
+            {% block pretitle %}{% endblock %}
+            {% block content_title %}{% if title %}<h1 class="col-md-10">{{ title }}</h1>{% endif %}{% endblock %}
+            <div class="col-md-2">
+              {% block object-tools %}{% endblock %}
+            </div>
+          </div>
+          <div class="row">
+            {% block content %}
+                {{ content }}
+                {% block filters %}{% endblock %}
+            {% endblock %}
+            {% block sidebar %}{% endblock %}
+          </div>
+        </div>
+
+    </article>
+
+    {% block footer %}{% endblock %}
+
+    {% if extrafooter %}
+      <footer>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-8 small">
+              {{extrafooter|safe}}
+            </div>
+          </div>
+        </div>
+      </footer>
+    {% endif %}
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</body>
+
+</html>

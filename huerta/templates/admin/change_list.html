@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls static admin_list %}
+{% load i18n admin_urls static admin_list huerta %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -93,7 +93,13 @@
           <div class="panel-heading">
             <h2 class="panel-title">{% trans 'Filter' %}</h2>
           </div>
-          {% for spec in cl.filter_specs %}{% admin_list_filter cl spec %}{% endfor %}
+          {% for spec in cl.filter_specs %}
+            {% if spec.template == 'admin/collapsed_filter.html' %}
+              {% collapsed_admin_list_filter cl spec %}
+            {% else %}
+              {% admin_list_filter cl spec %}
+            {% endif %}
+          {% endfor %}
       </div>
     {% endif %}
   {% endblock %}

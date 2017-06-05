@@ -16,11 +16,11 @@ def app_links(app, request):
         return ''
 
 @register.simple_tag
-def huerta_admin_list_filter(cl, spec):
+def collapsed_admin_list_filter(cl, spec):
     tpl = get_template(spec.template)
     return tpl.render({
         'title': spec.title,
         'choices': list(spec.choices(cl)),
+        'selected_choices': list(spec.selected_choices(cl)),
         'spec': spec,
-        'changelist': cl,
     })

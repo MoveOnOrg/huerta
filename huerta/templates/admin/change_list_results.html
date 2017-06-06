@@ -7,7 +7,7 @@
 {% if results %}
   <div class="results">
     {{cl.model_admin.block_above_results|safe}}
-    <table id="result_list" class="table">
+    <table id="result_list" class="table{% if cl.model_admin.list_striped %} table-striped{% endif %}">
       <thead>
         <tr>
           {% for header in result_headers %}

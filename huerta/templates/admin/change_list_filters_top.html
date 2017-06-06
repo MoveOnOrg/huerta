@@ -51,41 +51,133 @@
 {% block content %}
   {% block filters %}
     {% if cl.has_filters %}
-      <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h2 class="panel-title">{% trans 'Filter' %}</h2>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h2 class="panel-title"{% if cl.model_admin.filters_collapsable %} data-toggle="collapse" href="#filter-list" aria-expanded="true" aria-controls="filter-list"{% endif %}>{% trans 'Filter' %}</h2>
+        </div>
+        <div id="filter-list" class="{% if cl.model_admin.filters_collapsable %} collapse{% if not request.GET|length %} in{% endif %}{% endif %}">
+          <div class="panel-body">
+            {% for spec in cl.filter_specs %}
+              {% if spec.template == 'admin/collapsed_filter.html' %}
+                {% collapsed_admin_list_filter cl spec %}
+              {% else %}
+                {% admin_list_filter cl spec %}
+              {% endif %}
+            {% endfor %}
           </div>
-          {% for spec in cl.filter_specs %}{% mo_admin_list_filter cl spec %}{% endfor %}
+          {% if cl.model_admin.filters_require_submit %}
+            <div class="panel-footer">
+              <a href="{{ request.path }}" id="submit-filters" class="btn btn-primary">Filter</a>
+            </div>
+          {% endif %}
+        </div>
       </div>
+      {% if cl.model_admin.filters_require_submit %}
+        <script type="text/javascript">
+          var urlPath = '{{ request.path }}';
+          var $submitLink = $('#submit-filters');
+          // urlParams from https://stackoverflow.com/a/2880929
+          var urlParams;
+          (window.onpopstate = function () {
+              var match,
+                  pl     = /\+/g,
+                  search = /([^&=]+)=?([^&]*)/g,
+                  decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+                  query  = window.location.search.substring(1);
+              urlParams = {};
+              while (match = search.exec(query))
+                 urlParams[decode(match[1])] = decode(match[2]);
+          })();
+
+          $('#filter-list .dropdown-menu a').click(function() {
+            var $link = $(this);
+            var $menu = $link.parents('.dropdown-menu');
+            var $allLi = $menu.find('a[data-value=""]').parent();
+            var type = $link.attr('data-select-type');
+            var parameter = $link.attr('data-parameter');
+            var value = $link.attr('data-value');
+            var values = [];
+            if (parameter in urlParams) {
+              values = urlParams[parameter].split(',');
+            }
+            var valueIndex = values.indexOf(value);
+            var $button = $('#dropdown-filter-' + parameter);
+
+            if (value == '') {
+              // On "All" links, remove all values and reset
+              // all other links.
+              values = [];
+              $menu.find('a[data-select-type=remove]').each(
+                function(index, item) {
+                  var $menuLink = $(item);
+                  $menuLink.attr('data-select-type', 'add');
+                  $menuLink.text($menuLink.attr('data-value'));
+                }
+              );
+            }
+            else {
+              if (type == 'add') {
+                $link.attr('data-select-type', 'remove');
+                $link.html('<span class="text-danger">[x]</span> ' + value);
+                if (valueIndex == -1) {
+                  values.push(value);
+                }
+              }
+              else {
+                $link.attr('data-select-type', 'add');
+                $link.text(value);
+                if (valueIndex > -1) {
+                  values.splice(valueIndex, 1);
+                }
+              }
+              values = values.sort();
+            }
+            urlParams[parameter] = values.join(',');
+            if (values.length > 0) {
+              $button.html(values.join(', ') + ' <span class="caret"></span>');
+              $allLi.removeClass('disabled');
+            }
+            else {
+              delete urlParams[parameter];
+              $button.html('All <span class="caret"></span>');
+              $allLi.addClass('disabled');
+            }
+
+            $submitLink.attr('href', urlPath + '?' + $.param(urlParams));
+            return false;
+          })
+        </script>
+      {% endif %}
     {% endif %}
   {% endblock %}
-  <div class="col-md-12">
+  <div class="row">
+    <div class="col-md-12">
 
-    {% if cl.formset.errors %}
-        <p class="errornote">
-        {% if cl.formset.total_error_count == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
-        </p>
-        {{ cl.formset.non_form_errors }}
-    {% endif %}
-    <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
-      {% block search %}{% search_form cl %}{% endblock %}
-      {% block date_hierarchy %}{% date_hierarchy cl %}{% endblock %}
-
-      <form id="changelist-form" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
-      {% if cl.formset %}
-        <div>{{ cl.formset.management_form }}</div>
+      {% if cl.formset.errors %}
+          <p class="errornote">
+          {% if cl.formset.total_error_count == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
+          </p>
+          {{ cl.formset.non_form_errors }}
       {% endif %}
+      <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
+        {% block search %}{% search_form cl %}{% endblock %}
+        {% block date_hierarchy %}{% date_hierarchy cl %}{% endblock %}
+
+        <form id="changelist-form" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
+        {% if cl.formset %}
+          <div>{{ cl.formset.management_form }}</div>
+        {% endif %}
 
 
 
-      {% block result_list %}
-          {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
-          {% result_list cl %}
-          {% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
-      {% endblock %}
-      {% block pagination %}{% pagination cl %}{% endblock %}
-      </form>
+        {% block result_list %}
+            {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+            {% result_list cl %}
+            {% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+        {% endblock %}
+        {% block pagination %}{% pagination cl %}{% endblock %}
+        </form>
+      </div>
     </div>
   </div>
 {% endblock %}

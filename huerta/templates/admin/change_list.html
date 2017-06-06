@@ -93,13 +93,16 @@
           <div class="panel-heading">
             <h2 class="panel-title">{% trans 'Filter' %}</h2>
           </div>
-          {% for spec in cl.filter_specs %}
-            {% if spec.template == 'admin/collapsed_filter.html' %}
-              {% collapsed_admin_list_filter cl spec %}
-            {% else %}
-              {% admin_list_filter cl spec %}
-            {% endif %}
-          {% endfor %}
+          <div id="filter-list" class="panel-body">
+            {% for spec in cl.filter_specs %}
+              {% if spec.template == 'admin/collapsed_filter.html' %}
+                {% collapsed_admin_list_filter cl spec %}
+              {% else %}
+                {% admin_list_filter cl spec %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
       </div>
     {% endif %}
   {% endblock %}

@@ -18,6 +18,7 @@ class CollapsedListFilter(AllValuesFieldListFilter):
         # we need it for {{spec.parameter_name}} in template
         self.parameter_name = self.lookup_kwarg
         yield {
+            'parameter_name': self.parameter_name,
             'selected': (self.lookup_val is None
                 and self.lookup_val_isnull is None),
             'query_string': cl.get_query_string({},
@@ -57,6 +58,7 @@ class CollapsedListFilter(AllValuesFieldListFilter):
             else:
                 change[self.lookup_kwarg] = pk_val
             yield {
+                'parameter_name': self.parameter_name,
                 'selected': selected,
                 'query_string': cl.get_query_string(change, remove),
                 'display': display_val,
@@ -65,6 +67,7 @@ class CollapsedListFilter(AllValuesFieldListFilter):
             }
         if include_none:
             yield {
+                'parameter_name': self.parameter_name,
                 'selected': bool(self.lookup_val_isnull),
                 'query_string': cl.get_query_string({
                     self.lookup_kwarg_isnull: 'True',
@@ -76,6 +79,7 @@ class CollapsedListFilter(AllValuesFieldListFilter):
         self.parameter_name = self.lookup_kwarg
         if self.lookup_val is None and self.lookup_val_isnull is None:
             yield {
+                'parameter_name': self.parameter_name,
                 'selected': (self.lookup_val is None
                     and self.lookup_val_isnull is None),
                 'query_string': cl.get_query_string({},
@@ -116,6 +120,7 @@ class CollapsedListFilter(AllValuesFieldListFilter):
                 change[self.lookup_kwarg] = pk_val
             if selected:
                 yield {
+                    'parameter_name': self.parameter_name,
                     'selected': selected,
                     'query_string': cl.get_query_string(change, remove),
                     'display': display_val,
@@ -124,6 +129,7 @@ class CollapsedListFilter(AllValuesFieldListFilter):
                 }
         if include_none and bool(self.lookup_val_isnull):
             yield {
+                'parameter_name': self.parameter_name,
                 'selected': bool(self.lookup_val_isnull),
                 'query_string': cl.get_query_string({
                     self.lookup_kwarg_isnull: 'True',

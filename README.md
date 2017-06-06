@@ -16,7 +16,7 @@ Huerta will read the following settings from the Django site's `settings.py`:
 * *HUERTA_EXTRA_FOOTER*: HTML to put in `<footer>`.
 * *HUERTA_EXTRA_STATIC_CSS*: paths to local static CSS files, relative to the static directory path.
 
-### App links
+## App links
 
 Huerta allows each Django app to supply its own admin navigation links. To add links to the admin navigation:
 
@@ -30,3 +30,43 @@ def app_links(request):
       links.append('<li><a href="%s">Special Page</a></li>' % reverse('special:page'))
     return ''.join(links)
 ```
+
+## Model Admin Display Options
+
+Huerta adds some options to model admin displays, i.e. classes extending admin.ModelAdmin. Here's an example using all options:
+
+```from huerta.filters import CollapsedListFilter
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_filter = (('venue', CollapsedListFilter),)
+    change_list_template = "admin/change_list_filters_top.html"
+    filters_collapsable = True
+    filters_require_submit = True
+    disable_list_headers = True
+    list_striped = True
+```
+
+### CollapsedListFilter
+
+CollapsedListFilter is a filter type that shows multiple options in a drop-down.
+
+### change_list_filters_top.html
+
+This template moves filters above results.
+
+### filters_collapsable = True
+
+This option makes the entire filters panel collaspable.
+
+### filters_require_submit = True
+
+This option makes filters no longer submit on select, and instead adds a "Filter" button for submitting.
+
+### disable_list_headers = True
+
+This option removes headers from the results list.
+
+### list_striped = True
+
+This option makes the results list table striped.

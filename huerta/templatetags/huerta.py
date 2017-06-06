@@ -19,6 +19,7 @@ def app_links(app, request):
 def collapsed_admin_list_filter(cl, spec):
     tpl = get_template(spec.template)
     return tpl.render({
+        'cl': cl,
         'title': spec.title,
         'choices': list(spec.choices(cl)),
         'selected_choices': list(spec.selected_choices(cl)),

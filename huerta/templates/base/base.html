@@ -41,7 +41,7 @@
                         {% endfor %}
                         {% block userlinks %}
                             {% if request.user.id %}
-                            <li><a href="{% url 'django.contrib.auth.views.logout' %}">{% trans 'Log out' %}</a></li>
+                            <li><a href="{% url 'logout' %}">{% trans 'Log out' %}</a></li>
                             {% endif %}
                         {% endblock %}
                       </ul>

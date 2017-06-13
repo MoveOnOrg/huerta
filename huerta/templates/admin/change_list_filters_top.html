@@ -53,7 +53,13 @@
     {% if cl.has_filters %}
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h2 class="panel-title"{% if cl.model_admin.filters_collapsable %} data-toggle="collapse" href="#filter-list" aria-expanded="true" aria-controls="filter-list"{% endif %}>{% trans 'Filter' %}</h2>
+          <div class="panel-title"{% if cl.model_admin.filters_collapsable %} data-toggle="collapse" href="#filter-list" aria-expanded="true" aria-controls="filter-list"{% endif %}>
+            <h3 >{% trans 'Filter' %}</h3>
+             {# TODO: load the current filters here, so collapsed view will show what the filter is #}
+             {% if cl.model_admin.filters_collapsable and request.GET|length %}
+               <span id="filter-list-collapsed-header"></span>
+             {% endif %}
+          </div>
         </div>
         <div id="filter-list" class="{% if cl.model_admin.filters_collapsable %} collapse{% if not request.GET|length %} in{% endif %}{% endif %}">
           <div class="panel-body">
@@ -74,6 +80,9 @@
       </div>
       {% if cl.model_admin.filters_require_submit %}
         <script type="text/javascript">
+          if (!window.$ && django.jQuery) {
+              window.$ = django.jQuery;
+          }
           var urlPath = '{{ request.path }}';
           var $submitLink = $('#submit-filters');
           // urlParams from https://stackoverflow.com/a/2880929

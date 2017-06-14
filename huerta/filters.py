@@ -28,8 +28,8 @@ class CollapsedListFilter(AllValuesFieldListFilter):
         }
         include_none = False
         for val in self.lookup_choices:
-            pk_val = val
-            display_val = val
+            pk_val = str(val)
+            display_val = str(val)
             if isinstance(val, tuple):
                 #remote_field case
                 pk_val = str(val[0])
@@ -89,8 +89,8 @@ class CollapsedListFilter(AllValuesFieldListFilter):
             }
         include_none = False
         for val in self.lookup_choices:
-            pk_val = val
-            display_val = val
+            pk_val = str(val)
+            display_val = str(val)
             if isinstance(val, tuple):
                 #remote_field case
                 pk_val = str(val[0])

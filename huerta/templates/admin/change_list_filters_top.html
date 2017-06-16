@@ -51,13 +51,18 @@
 {% block content %}
   {% block filters %}
     {% if cl.has_filters %}
-      <div class="panel panel-default">
+      <div class="panel panel-default top-filters">
         <div class="panel-heading">
           <div class="panel-title"{% if cl.model_admin.filters_collapsable %} data-toggle="collapse" href="#filter-list" aria-expanded="true" aria-controls="filter-list"{% endif %}>
-            <h3 >{% trans 'Filter' %}</h3>
-             {# TODO: load the current filters here, so collapsed view will show what the filter is #}
+            <h3 class="float-left">{% trans 'Filter' %}</h3>
              {% if cl.model_admin.filters_collapsable and request.GET|length %}
-               <span id="filter-list-collapsed-header"></span>
+               <div id="filter-list-collapsed-header">
+                 <span class="count">
+                   {{ cl.result_count }} {% if cl.result_count == 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endif %}
+                 </span>
+                 <span id="filter-list-collapsed-header-filterdisplay"><!--fill me with what was filtered -->
+                 </span>
+               </div>
              {% endif %}
           </div>
         </div>
@@ -98,7 +103,34 @@
                  urlParams[decode(match[1])] = decode(match[2]);
           })();
 
+          function getDropDownStatus(menu) {
+            var displayValues = []
+            var name = $('label', $(menu).parents('.collapsed-filter')).text().replace(/^\s*By\s*/,'');
+            var displayValues = $('a', menu)
+              .filter(function(){
+                return $(this).attr('data-select-type') == 'remove'
+              })
+              .map(function() {
+                return $('.dropdown-display-value', this).text()
+              }).toArray();
+            return {
+              'name': name,
+              'displayValues': displayValues,
+              'menu': menu
+            };
+          }
+
           $('#filter-list .dropdown-menu a').click(function() {
+            /* This toggles the selection for particular items
+             * by adding data-select-type={add,remove} appropriately
+             * and also updating global variable `urlParams`
+             * which will be submitted on the Filter button
+             *
+             * A frustrating edge case is when Null is an option
+             * which we have to navigate around quite a bit.
+             * that has a parameter_name + '__isnull' in urlParams
+             * and collapsed value will be "EMPTY" (to avoid colliding with All)
+             */
             var $link = $(this);
             var $menu = $link.parents('.dropdown-menu');
             var $allLi = $menu.find('a[data-value=""]').parent();
@@ -106,6 +138,7 @@
             var parameter = $link.attr('data-parameter');
             var value = $link.attr('data-value');
             var values = [];
+            var isNullParam = ((parameter+'__isnull') in urlParams);
             if (parameter in urlParams) {
               values = urlParams[parameter].split(',');
             }
@@ -116,6 +149,7 @@
               // On "All" links, remove all values and reset
               // all other links.
               values = [];
+              isNullParam = false;
               $menu.find('a[data-select-type=remove]').each(
                 function(index, item) {
                   var $menuLink = $(item);
@@ -123,30 +157,37 @@
                   $menuLink.text($menuLink.attr('data-value'));
                 }
               );
-            }
-            else {
+            } else {
               if (type == 'add') {
                 $link.attr('data-select-type', 'remove');
-                $link.html('<span class="text-danger">[x]</span> ' + value);
-                if (valueIndex == -1) {
+                $('.text-danger', $link).removeClass('hidden');
+                if (value === 'EMPTY') {
+                  isNullParam = true;
+                } else if (valueIndex == -1) {
                   values.push(value);
                 }
-              }
-              else {
+              } else {
                 $link.attr('data-select-type', 'add');
-                $link.text(value);
-                if (valueIndex > -1) {
+                $('.text-danger', $link).addClass('hidden');
+                if (value === 'EMPTY') {
+                  isNullParam = false;
+                } else if (valueIndex > -1) {
                   values.splice(valueIndex, 1);
                 }
               }
               values = values.sort();
             }
             urlParams[parameter] = values.join(',');
-            if (values.length > 0) {
-              $button.html(values.join(', ') + ' <span class="caret"></span>');
-              $allLi.removeClass('disabled');
+            if (isNullParam) {
+              urlParams[parameter+'__isnull'] = 'True'
+            } else {
+              delete urlParams[parameter+'__isnull'];
             }
-            else {
+            if (values.length > 0 || isNullParam) {
+              var fullStatus = getDropDownStatus($menu);
+              $button.html(fullStatus.displayValues.join(', ') + ' <span class="caret"></span>');
+              $allLi.removeClass('disabled');
+            } else {
               delete urlParams[parameter];
               $button.html('All <span class="caret"></span>');
               $allLi.addClass('disabled');
@@ -154,6 +195,20 @@
 
             $submitLink.attr('href', urlPath + '?' + $.param(urlParams));
             return false;
+          })
+          $(function() {
+            var filtersOn = $('#filter-list .dropdown-menu')
+              .map(function() {
+                return getDropDownStatus(this);
+              }).filter(function() {
+                return (this.displayValues.length
+                        && this.displayValues[0] != 'All');
+              }).toArray();
+            if (filtersOn.length) {
+              $('#filter-list-collapsed-header-filterdisplay').html(
+                filtersOn.map(function(f){ return '<b>'+ f.name + '</b>: ' + f.displayValues.join(','); }).join(' ')
+              )
+            }
           })
         </script>
       {% endif %}

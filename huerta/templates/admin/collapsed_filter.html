@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="row">
+<div class="row collapsed-filter">
   <div class="col-md-{% if cl.model_admin.change_list_template == 'admin/change_list_filters_top.html' %}4{% else %}12{% endif %}">
     {% if cl.model_admin.change_list_template == 'admin/change_list_filters_top.html' %}<p>{% endif %}<label for="dropdown-filter-{{spec.parameter_name}}">{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</label>{% if cl.model_admin.change_list_template == 'admin/change_list_filters_top.html' %}</p>{% endif %}
   </div>
@@ -16,10 +16,8 @@
         {% for choice in choices %}
         <li  {% if choice.selected and not choice.multiselect %}class="disabled"{% endif %}>
           <a href="{{choice.query_string|iriencode}}" data-select-type="{% if choice.selected %}remove{% else %}add{% endif %}" data-parameter="{{choice.parameter_name}}" data-value="{{choice.value}}">
-            {% if choice.selected and choice.multiselect %}
-              <span class="text-danger">[x]</span>
-            {% endif %}
-            {{choice.display}}
+            <span class="text-danger {% if choice.selected and choice.multiselect %}{%else%}hidden{%endif%}">[x]</span>
+            <span class="dropdown-display-value">{{choice.display}}</span>
           </a>
         </li>
         {% endfor %}

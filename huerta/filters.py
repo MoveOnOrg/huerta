@@ -1,4 +1,5 @@
 from django.contrib.admin.filters import AllValuesFieldListFilter
+from django.db.models import Q
 from django.utils.encoding import smart_text
 from django.utils.translation import ugettext_lazy as _
 
@@ -9,8 +10,36 @@ class CollapsedListFilter(AllValuesFieldListFilter):
     template = 'admin/collapsed_filter.html'
 
     def queryset(self, request, queryset):
-        q = dict([(('%s__in' % k).replace('__exact',''), v.split(',')) for k,v in self.used_parameters.items()])
-        return queryset.filter(**q)
+        """
+        This is more complex because it needs to handle null options
+        and if there is one, then it needs to be OR'd with the
+        other selected options.  There are also javascript consequences
+        to handle this case, too.
+        """
+        modq = {}
+        null_keys = {}
+        for k,v in self.used_parameters.items():
+            if isinstance(v, str):
+                modk = ('%s__in' % k).replace('__exact','')
+                modv = v.split(',')
+                modq[modk] = modv
+            elif isinstance(v, bool) and '__isnull' in k:
+                null_keys[k] = v
+            else:
+                modq[k] = v
+
+        if modq and not null_keys:
+            return queryset.filter(**modq)
+        elif not modq and not null_keys:
+            return queryset
+        else: #definitely null_keys
+            finalq = Q(**modq) if modq else None
+            for nk, nv in null_keys.items():
+                if finalq is None:
+                    finalq = Q(**{nk:nv})
+                else:
+                    finalq = finalq | Q(**{nk:nv})
+                return queryset.filter(finalq)
 
     def choices(self, cl):
         # copied over from parent class EXCEPT splits value
@@ -73,6 +102,8 @@ class CollapsedListFilter(AllValuesFieldListFilter):
                     self.lookup_kwarg_isnull: 'True',
                 }, [self.lookup_kwarg]),
                 'display': self.empty_value_display,
+                'multiselect': True,
+                'value': 'EMPTY',
             }
 
     def selected_choices(self, cl):
@@ -135,4 +166,6 @@ class CollapsedListFilter(AllValuesFieldListFilter):
                     self.lookup_kwarg_isnull: 'True',
                 }, [self.lookup_kwarg]),
                 'display': self.empty_value_display,
+                'multiselect': True,
+                'value': 'EMPTY'
             }

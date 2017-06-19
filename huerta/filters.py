@@ -1,4 +1,5 @@
 from django.contrib.admin.filters import AllValuesFieldListFilter
+from django.db.models import Q
 from django.utils.encoding import smart_text
 from django.utils.translation import ugettext_lazy as _
 
@@ -9,8 +10,37 @@ class CollapsedListFilter(AllValuesFieldListFilter):
     template = 'admin/collapsed_filter.html'
 
     def queryset(self, request, queryset):
-        q = dict([(('%s__in' % k).replace('__exact',''), v.split(',')) for k,v in self.used_parameters.items()])
-        return queryset.filter(**q)
+        """
+        This handles multi-value options as comma-separated lists
+        and null options are OR'd with the other selected options.
+        """
+        modified_query = {}
+        null_keys = {}
+        for key, value in self.used_parameters.items():
+            if isinstance(value, str):
+                modified_key = ('%s__in' % key).replace('__exact','')
+                modified_value = value.split(',')
+                modified_query[modified_key] = modified_value
+            elif isinstance(value, bool) and '__isnull' in key:
+                null_keys[key] = value
+            else:
+                modified_query[key] = value
+
+        if not modified_query and not null_keys:
+            # Nothing was modified, use default queryset
+            return queryset
+        elif not null_keys:
+            # Query modified without null keys
+            return queryset.filter(**modified_query)
+        else:
+            # Query modified with OR'd null key/value pairs
+            final_query = Q(**modified_query) if modified_query else None
+            for null_key, null_value in null_keys.items():
+                if final_query is None:
+                    final_query = Q(**{null_key:null_value})
+                else:
+                    final_query = final_query | Q(**{null_key:null_value})
+                return queryset.filter(final_query)
 
     def choices(self, cl):
         # copied over from parent class EXCEPT splits value
@@ -28,8 +58,8 @@ class CollapsedListFilter(AllValuesFieldListFilter):
         }
         include_none = False
         for val in self.lookup_choices:
-            pk_val = val
-            display_val = val
+            pk_val = str(val)
+            display_val = str(val)
             if isinstance(val, tuple):
                 #remote_field case
                 pk_val = str(val[0])
@@ -73,6 +103,8 @@ class CollapsedListFilter(AllValuesFieldListFilter):
                     self.lookup_kwarg_isnull: 'True',
                 }, [self.lookup_kwarg]),
                 'display': self.empty_value_display,
+                'multiselect': True,
+                'value': 'EMPTY',
             }
 
     def selected_choices(self, cl):
@@ -89,8 +121,8 @@ class CollapsedListFilter(AllValuesFieldListFilter):
             }
         include_none = False
         for val in self.lookup_choices:
-            pk_val = val
-            display_val = val
+            pk_val = str(val)
+            display_val = str(val)
             if isinstance(val, tuple):
                 #remote_field case
                 pk_val = str(val[0])
@@ -135,4 +167,6 @@ class CollapsedListFilter(AllValuesFieldListFilter):
                     self.lookup_kwarg_isnull: 'True',
                 }, [self.lookup_kwarg]),
                 'display': self.empty_value_display,
+                'multiselect': True,
+                'value': 'EMPTY'
             }

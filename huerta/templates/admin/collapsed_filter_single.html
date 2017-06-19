@@ -1,0 +1,27 @@
+{% load i18n %}
+<div class="row collapsed-filter">
+  <div class="col-md-{% if cl.model_admin.change_list_template == 'admin/change_list_filters_top.html' %}4{% else %}12{% endif %}">
+    {% if cl.model_admin.change_list_template == 'admin/change_list_filters_top.html' %}<p>{% endif %}<label for="dropdown-filter-{{spec.parameter_name}}">{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</label>{% if cl.model_admin.change_list_template == 'admin/change_list_filters_top.html' %}</p>{% endif %}
+  </div>
+  <div class="col-md-{% if cl.model_admin.change_list_template == 'admin/change_list_filters_top.html' %}8{% else %}12{% endif %}">
+    <div class="input-group-btn">
+      <button class="btn btn-default dropdown-toggle" type="button" id="dropdown-filter-{{spec.parameter_name}}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        {% for choice in selected_choices %}
+            {# with multiselect we surround with >'s to visually separate multiple options #}
+            {{choice.display}}{% if choice.multiselect and not forloop.last %},{% endif %}
+        {% endfor %}
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="dropdown-filter-{{spec.parameter_name}}">
+        {% for choice in choices %}
+        <li {% if choice.selected and not choice.multiselect %}class="disabled"{% endif %}>
+          <a href="{{choice.query_string|iriencode}}" data-select-type="{% if choice.selected %}remove{% else %}add{% endif %}" data-parameter="{{choice.parameter_name}}" data-value="{{choice.value}}">
+            <span class="text-danger{% if choice.selected and choice.multiselect %}{% else %} hidden{% endif %}">[x]</span>
+            <span class="dropdown-display-value">{{choice.display}}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>

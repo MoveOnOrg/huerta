@@ -1,4 +1,4 @@
-from django.contrib.admin.filters import AllValuesFieldListFilter
+from django.contrib.admin.filters import AllValuesFieldListFilter, SimpleListFilter
 from django.db.models import Q
 from django.utils.encoding import smart_text
 from django.utils.translation import ugettext_lazy as _
@@ -138,6 +138,16 @@ class CollapsedListFilterMixin(object):
                 'multiselect': self.multiselect_enabled,
                 'value': 'EMPTY'
             }
+
+
+class CollapsedSimpleListFilter(CollapsedListFilterMixin, SimpleListFilter):
+
+    def __init__(self, *args, **kw):
+        super(CollapsedSimpleListFilter, self).__init__(*args, **kw)
+        self.lookup_kwarg = self.parameter_name
+        self.lookup_val = None
+        self.lookup_val_isnull = None
+        self.lookup_kwarg_isnull = '{}__isnull'.format(self.parameter_name)
 
 
 class CollapsedListFilter(CollapsedListFilterMixin, AllValuesFieldListFilter):

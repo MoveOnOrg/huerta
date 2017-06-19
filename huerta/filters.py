@@ -149,6 +149,15 @@ class CollapsedSimpleListFilter(CollapsedListFilterMixin, SimpleListFilter):
         self.lookup_val_isnull = None
         self.lookup_kwarg_isnull = '{}__isnull'.format(self.parameter_name)
 
+    def queryset(self, request, queryset):
+        val = self.value()
+        self.lookup_val = val
+        if val:
+            arg = getattr(self, 'query_arg', '{}__in'.format(self.parameter_name))
+            kwargs = {arg: [a for a in val.split(',')]}
+            queryset = queryset.filter(**kwargs)
+        return queryset
+
 
 class CollapsedListFilter(CollapsedListFilterMixin, AllValuesFieldListFilter):
 

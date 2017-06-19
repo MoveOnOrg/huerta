@@ -144,32 +144,33 @@ class CollapsedListFilter(CollapsedListFilterMixin, AllValuesFieldListFilter):
 
     def queryset(self, request, queryset):
         """
-        This is more complex because it needs to handle null options
-        and if there is one, then it needs to be OR'd with the
-        other selected options.  There are also javascript consequences
-        to handle this case, too.
+        This handles multi-value options as comma-separated lists
+        and null options are OR'd with the other selected options.
         """
-        modq = {}
+        modified_query = {}
         null_keys = {}
-        for k,v in self.used_parameters.items():
-            if isinstance(v, str):
-                modk = ('%s__in' % k).replace('__exact','')
-                modv = v.split(',')
-                modq[modk] = modv
-            elif isinstance(v, bool) and '__isnull' in k:
-                null_keys[k] = v
+        for key, value in self.used_parameters.items():
+            if isinstance(value, str):
+                modified_key = ('%s__in' % key).replace('__exact','')
+                modified_value = value.split(',')
+                modified_query[modified_key] = modified_value
+            elif isinstance(value, bool) and '__isnull' in key:
+                null_keys[key] = value
             else:
-                modq[k] = v
+                modified_query[key] = value
 
-        if modq and not null_keys:
-            return queryset.filter(**modq)
-        elif not modq and not null_keys:
+        if not modified_query and not null_keys:
+            # Nothing was modified, use default queryset
             return queryset
-        else: #definitely null_keys
-            finalq = Q(**modq) if modq else None
-            for nk, nv in null_keys.items():
-                if finalq is None:
-                    finalq = Q(**{nk:nv})
+        elif not null_keys:
+            # Query modified without null keys
+            return queryset.filter(**modified_query)
+        else:
+            # Query modified with OR'd null key/value pairs
+            final_query = Q(**modified_query) if modified_query else None
+            for null_key, null_value in null_keys.items():
+                if final_query is None:
+                    final_query = Q(**{null_key:null_value})
                 else:
-                    finalq = finalq | Q(**{nk:nv})
-                return queryset.filter(finalq)
+                    final_query = final_query | Q(**{null_key:null_value})
+                return queryset.filter(final_query)

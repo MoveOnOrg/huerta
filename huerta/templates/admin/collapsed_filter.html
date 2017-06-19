@@ -14,9 +14,9 @@
       </button>
       <ul class="dropdown-menu" aria-labelledby="dropdown-filter-{{spec.parameter_name}}">
         {% for choice in choices %}
-        <li  {% if choice.selected and not choice.multiselect %}class="disabled"{% endif %}>
+        <li {% if choice.selected and not choice.multiselect %}class="disabled"{% endif %}>
           <a href="{{choice.query_string|iriencode}}" data-select-type="{% if choice.selected %}remove{% else %}add{% endif %}" data-parameter="{{choice.parameter_name}}" data-value="{{choice.value}}">
-            <span class="text-danger {% if choice.selected and choice.multiselect %}{%else%}hidden{%endif%}">[x]</span>
+            <span class="text-danger{% if choice.selected and choice.multiselect %}{% else %} hidden{% endif %}">[x]</span>
             <span class="dropdown-display-value">{{choice.display}}</span>
           </a>
         </li>

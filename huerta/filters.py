@@ -154,7 +154,7 @@ class CollapsedSimpleListFilter(CollapsedListFilterMixin, SimpleListFilter):
         self.lookup_val = val
         if val:
             arg = getattr(self, 'query_arg', '{}__in'.format(self.parameter_name))
-            kwargs = {arg: [afor a in val.split(',')]}
+            kwargs = {arg: [a for a in val.split(',')]}
             queryset = queryset.filter(**kwargs)
         return queryset
 

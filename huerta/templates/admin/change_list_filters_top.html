@@ -60,7 +60,8 @@
                  <span class="count">
                    {{ cl.result_count }} {% if cl.result_count == 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endif %}
                  </span>
-                 <span id="filter-list-collapsed-header-filterdisplay"><!--fill me with what was filtered -->
+                 <span id="filter-list-collapsed-header-filterdisplay">
+                   {# fill me with what was filtered #}
                  </span>
                </div>
              {% endif %}
@@ -105,13 +106,14 @@
 
           function getDropDownStatus(menu) {
             var displayValues = []
-            var name = $('label', $(menu).parents('.collapsed-filter')).text().replace(/^\s*By\s*/,'');
+            var name = $('label', $(menu).parents('.collapsed-filter'))
+              .text().replace(/^\s*By\s*/,'');
             var displayValues = $('a', menu)
               .filter(function(){
-                return $(this).attr('data-select-type') == 'remove'
+                return $(this).attr('data-select-type') == 'remove';
               })
               .map(function() {
-                return $('.dropdown-display-value', this).text()
+                return $('.dropdown-display-value', this).text();
               }).toArray();
             return {
               'name': name,
@@ -122,14 +124,13 @@
 
           $('#filter-list .dropdown-menu a').click(function() {
             /* This toggles the selection for particular items
-             * by adding data-select-type={add,remove} appropriately
+             * by updating data-select-type={add,remove} appropriately
              * and also updating global variable `urlParams`
-             * which will be submitted on the Filter button
+             * which will be submitted on the Filter button.
              *
-             * A frustrating edge case is when Null is an option
-             * which we have to navigate around quite a bit.
-             * that has a parameter_name + '__isnull' in urlParams
-             * and collapsed value will be "EMPTY" (to avoid colliding with All)
+             * Null values have a parameter_name + '__isnull' in urlParams
+             * and collapsed value will be "EMPTY" (to avoid colliding
+             * with All)
              */
             var $link = $(this);
             var $menu = $link.parents('.dropdown-menu');
@@ -138,7 +139,7 @@
             var parameter = $link.attr('data-parameter');
             var value = $link.attr('data-value');
             var values = [];
-            var isNullParam = ((parameter+'__isnull') in urlParams);
+            var isNullParam = ((parameter + '__isnull') in urlParams);
             if (parameter in urlParams) {
               values = urlParams[parameter].split(',');
             }
@@ -179,9 +180,9 @@
             }
             urlParams[parameter] = values.join(',');
             if (isNullParam) {
-              urlParams[parameter+'__isnull'] = 'True'
+              urlParams[parameter + '__isnull'] = 'True'
             } else {
-              delete urlParams[parameter+'__isnull'];
+              delete urlParams[parameter + '__isnull'];
             }
             if (values.length > 0 || isNullParam) {
               var fullStatus = getDropDownStatus($menu);
@@ -206,10 +207,12 @@
               }).toArray();
             if (filtersOn.length) {
               $('#filter-list-collapsed-header-filterdisplay').html(
-                filtersOn.map(function(f){ return '<b>'+ f.name + '</b>: ' + f.displayValues.join(','); }).join(' ')
+                filtersOn.map(function(filter){
+                  return '<b>' + filter.name + '</b>: ' + filter.displayValues.join(', ');
+                }).join(' ');
               )
             }
-          })
+          });
         </script>
       {% endif %}
     {% endif %}

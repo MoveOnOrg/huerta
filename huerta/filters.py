@@ -201,3 +201,27 @@ class CollapsedListFilter(CollapsedListFilterMixin, AllValuesFieldListFilter):
                 else:
                     final_query = final_query | Q(**{null_key:null_value})
                 return queryset.filter(final_query)
+
+class TextInputFilter(SimpleListFilter):
+    title = ""
+    parameter_name = ""
+    template = "admin/textinputfilter.html"
+
+    def lookups(self, request, model_admin):
+        return (('1', '1'),)
+
+    def queryset(self, request, queryset):
+        val = self.value()
+        if val:
+            key = '%s__icontains' % self.parameter_name
+            queryset = queryset.filter(**{key:val})
+        return queryset
+
+def textinputfilter_factory(title, parameter_name):
+
+    class newclass(TextInputFilter):
+        pass
+
+    newclass.title = title
+    newclass.parameter_name = parameter_name
+    return newclass

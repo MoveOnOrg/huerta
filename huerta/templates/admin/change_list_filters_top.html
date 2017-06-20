@@ -130,6 +130,16 @@
             };
           }
 
+          function updateSubmitLink() {
+            $submitLink.attr('href', urlPath + '?' + $.param(urlParams));
+          }
+
+          $('#filter-list .text-input-filter input').keyup(function() {
+            var $input = $(this);
+            urlParams[$input.attr('name')] = $input.val();
+            updateSubmitLink();
+          });
+
           $('#filter-list .dropdown-menu a').click(function() {
             /* This toggles the selection for particular items
              * by updating data-select-type={add,remove} appropriately
@@ -208,7 +218,7 @@
               $allLi.addClass('disabled');
             }
 
-            $submitLink.attr('href', urlPath + '?' + $.param(urlParams));
+            updateSubmitLink();
             return false;
           })
           $(function() {

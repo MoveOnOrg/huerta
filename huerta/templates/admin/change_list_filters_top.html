@@ -53,16 +53,24 @@
     {% if cl.has_filters %}
       <div class="panel panel-default top-filters">
         <div class="panel-heading">
-          <div class="panel-title"{% if cl.model_admin.filters_collapsable %} data-toggle="collapse" href="#filter-list" aria-expanded="true" aria-controls="filter-list"{% endif %}>
-            <h3 class="float-left">{% trans 'Filter' %}</h3>
+          <div class="row panel-title"{% if cl.model_admin.filters_collapsable %} data-toggle="collapse" href="#filter-list" aria-expanded="true" aria-controls="filter-list"{% endif %}>
+            <div class="col-md-2">
+              <h3 class="float-left">{% trans 'Filter' %} <span class="caret"></span></h3>
+            </div>
              {% if cl.model_admin.filters_collapsable and request.GET|length %}
-               <div id="filter-list-collapsed-header">
+               <div id="filter-list-collapsed-header" class="col-md-8">
                  <span class="count">
                    {{ cl.result_count }} {% if cl.result_count == 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endif %}
                  </span>
                  <span id="filter-list-collapsed-header-filterdisplay">
                    {# fill me with what was filtered #}
                  </span>
+               </div>
+               <div class="col-md-2 float-right">
+                 <a href="?" id="clear-filters" class="btn btn-info float-right"
+                    {# this is necessary because collapsible javascript overrides click otherwise #}
+                    onclick="window.location=location.pathname"
+                    >Clear Filters</a>
                </div>
              {% endif %}
           </div>

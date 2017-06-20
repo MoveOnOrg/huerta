@@ -25,3 +25,11 @@ div.tabular.inline-related td.original {
 
 tr.selected > td {
   background-color: #f3f3f3; }
+
+.top-filters .panel-title .caret {
+    transform: rotate(0deg);
+}
+
+.top-filters .panel-title.collapsed .caret {
+    transform: rotate(-90deg);
+}

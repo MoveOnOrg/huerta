@@ -146,20 +146,26 @@
             var valueIndex = values.indexOf(value);
             var $button = $('#dropdown-filter-' + parameter);
 
-            if (value == '') {
-              // On "All" links, remove all values and reset
-              // all other links.
+            var clearOthers = function() {
               values = [];
               isNullParam = false;
               $menu.find('a[data-select-type=remove]').each(
                 function(index, item) {
                   var $menuLink = $(item);
                   $menuLink.attr('data-select-type', 'add');
-                  $menuLink.text($menuLink.attr('data-value'));
+                  $('.text-danger', $menuLink).addClass('hidden');
                 }
               );
+            }
+            if (value == '') {
+              // On "All" links, remove all values and reset
+              // all other links.
+              clearOthers();
             } else {
               if (type == 'add') {
+                if ($link.attr('data-singleselect')) {
+                  clearOthers();
+                }
                 $link.attr('data-select-type', 'remove');
                 $('.text-danger', $link).removeClass('hidden');
                 if (value === 'EMPTY') {

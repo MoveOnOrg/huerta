@@ -25,3 +25,13 @@ def collapsed_admin_list_filter(cl, spec):
         'selected_choices': list(spec.selected_choices(cl)),
         'spec': spec,
     })
+
+@register.simple_tag
+def admin_list_filter_with_cl(cl, spec):
+    tpl = get_template(spec.template)
+    return tpl.render({
+        'cl': cl,
+        'title': spec.title,
+        'choices': list(spec.choices(cl)),
+        'spec': spec,
+    })

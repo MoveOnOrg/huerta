@@ -164,12 +164,14 @@
             var valueIndex = values.indexOf(value);
             var $button = $('#dropdown-filter-' + parameter);
 
-            var clearOthers = function() {
+            var clearSelects = function(selectsToClear) {
               values = [];
               isNullParam = false;
-              $menu.find('a[data-select-type=remove]').each(
+              selectsToClear = selectsToClear || $menu;
+              selectsToClear.find('a[data-select-type=remove]').each(
                 function(index, item) {
                   var $menuLink = $(item);
+                  $menuLink.parent().removeClass('disabled')
                   $menuLink.attr('data-select-type', 'add');
                   $('.text-danger', $menuLink).addClass('hidden');
                 }
@@ -178,11 +180,11 @@
             if (value == '') {
               // On "All" links, remove all values and reset
               // all other links.
-              clearOthers();
+              clearSelects();
             } else {
               if (type == 'add') {
                 if ($link.attr('data-singleselect')) {
-                  clearOthers();
+                  clearSelects();
                 }
                 $link.attr('data-select-type', 'remove');
                 $('.text-danger', $link).removeClass('hidden');
@@ -209,6 +211,7 @@
               delete urlParams[parameter + '__isnull'];
             }
             if (values.length > 0 || isNullParam) {
+              clearSelects($allLi);
               var fullStatus = getDropDownStatus($menu);
               $button.html(fullStatus.displayValues.join(', ') + ' <span class="caret"></span>');
               $allLi.removeClass('disabled');

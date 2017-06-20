@@ -33,3 +33,9 @@ tr.selected > td {
 .top-filters .panel-title.collapsed .caret {
     transform: rotate(-90deg);
 }
+
+ul.dropdown-menu {
+    max-height: 20em;
+    overflow-y: auto;
+
+}

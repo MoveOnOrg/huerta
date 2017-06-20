@@ -10,6 +10,10 @@ class CollapsedListFilterMixin(object):
     template = 'admin/collapsed_filter.html'
     multiselect_enabled = True
 
+    def get_display_value(self, val):
+        """Override to convert a value to a display value"""
+        return val
+
     def choices(self, cl):
         # copied over from parent class EXCEPT splits value
         # hacky -- we should put this in __init__ but lazy
@@ -35,7 +39,7 @@ class CollapsedListFilterMixin(object):
             if val is None:
                 include_none = True
                 continue
-            display_val = smart_text(display_val)
+            display_val = smart_text(self.get_display_value(display_val))
             val_choice_list = [] if self.lookup_val is None else self.lookup_val.split(',')
             selected = (pk_val in val_choice_list) #DIFF
             remove = [self.lookup_kwarg_isnull]
@@ -98,7 +102,7 @@ class CollapsedListFilterMixin(object):
             if val is None:
                 include_none = True
                 continue
-            display_val = smart_text(display_val)
+            display_val = smart_text(self.get_display_value(display_val))
             val_choice_list = [] if self.lookup_val is None else self.lookup_val.split(',')
             selected = (pk_val in val_choice_list) #DIFF
             remove = [self.lookup_kwarg_isnull]
@@ -145,9 +149,9 @@ class CollapsedSimpleListFilter(CollapsedListFilterMixin, SimpleListFilter):
     def __init__(self, *args, **kw):
         super(CollapsedSimpleListFilter, self).__init__(*args, **kw)
         self.lookup_kwarg = self.parameter_name
-        self.lookup_val = None
         self.lookup_val_isnull = None
         self.lookup_kwarg_isnull = '{}__isnull'.format(self.parameter_name)
+        self.lookup_val = self.value()
 
     def queryset(self, request, queryset):
         val = self.value()

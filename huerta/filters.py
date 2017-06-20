@@ -156,9 +156,13 @@ class CollapsedSimpleListFilter(CollapsedListFilterMixin, SimpleListFilter):
     def queryset(self, request, queryset):
         val = self.value()
         self.lookup_val = val
+
         if val:
-            arg = getattr(self, 'query_arg', '{}__in'.format(self.parameter_name))
-            kwargs = {arg: [a for a in val.split(',')]}
+            if self.multiselect_enabled:
+                arg = getattr(self, 'query_arg', '{}__in'.format(self.parameter_name))
+                kwargs = {arg: [a for a in val.split(',')]}
+            if not self.multiselect_enabled:
+                kwargs = {self.query_arg: val}
             queryset = queryset.filter(**kwargs)
         return queryset
 

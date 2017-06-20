@@ -229,6 +229,12 @@
                 return (this.displayValues.length
                         && this.displayValues[0] != 'All');
               }).toArray();
+            $('#filter-list input[type=text]').each(function() {
+              if (this.value) {
+                filtersOn.push({"name": $(this).attr('data-label') || $(this).attr('name'),
+                                "displayValues": [this.value]});
+              }
+            });
             if (filtersOn.length) {
               $('#filter-list-collapsed-header-filterdisplay').html(
                 filtersOn.map(function(filter){

@@ -35,11 +35,13 @@ def app_links(request):
 
 Huerta adds some options to model admin displays, i.e. classes extending admin.ModelAdmin. Here's an example using all options:
 
-```from huerta.filters import CollapsedListFilter
+```from huerta.filters import CollapsedListFilter, textinputfilter_factory
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_filter = (('venue', CollapsedListFilter),)
+    list_filter = (('venue', CollapsedListFilter),
+                   textinputfilter_factory('Email',
+                            'email'))
     change_list_template = "admin/change_list_filters_top.html"
     filters_collapsable = True
     filters_require_submit = True
@@ -50,6 +52,10 @@ class EventAdmin(admin.ModelAdmin):
 ### CollapsedListFilter
 
 CollapsedListFilter is a filter type that shows multiple options in a drop-down.
+
+### textinputfilter_factory(title, parameter_name)
+
+Creates a text input filter where parameter_name is searched by `__icontains`
 
 ### change_list_filters_top.html
 

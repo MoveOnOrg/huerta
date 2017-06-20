@@ -98,7 +98,7 @@
               {% if spec.template == 'admin/collapsed_filter.html' %}
                 {% collapsed_admin_list_filter cl spec %}
               {% else %}
-                {% admin_list_filter cl spec %}
+                {% admin_list_filter_with_cl cl spec %}
               {% endif %}
             {% endfor %}
           </div>

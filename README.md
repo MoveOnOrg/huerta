@@ -1,6 +1,6 @@
 # Huerta
 
-Huerta is a set of templates and template-related functionality for Django sites, customizable with any [Bootstrap](https://getbootstrap.com/)-based CSS.
+Huerta is a set of templates and template-related functionality for Django sites, customizable with any [Bootstrap](https://getbootstrap.com/)-based CSS. It is named for [Dolores Huerta](https://en.wikipedia.org/wiki/Dolores_Huerta).
 
 ## Using
 

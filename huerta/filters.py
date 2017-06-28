@@ -1,4 +1,7 @@
-from django.contrib.admin.filters import AllValuesFieldListFilter, SimpleListFilter
+from collections import OrderedDict
+from django.contrib.admin.filters import (AllValuesFieldListFilter,
+                                          SimpleListFilter,
+                                          reverse_field_path)
 from django.db.models import Q
 from django.utils.encoding import smart_text
 from django.utils.translation import ugettext_lazy as _
@@ -169,6 +172,41 @@ class CollapsedSimpleListFilter(CollapsedListFilterMixin, SimpleListFilter):
 
 class CollapsedListFilter(CollapsedListFilterMixin, AllValuesFieldListFilter):
 
+    order_by = None
+
+    def lookups(self, queryset, field):
+        order_by = self.order_by or field.name
+        choice_query = (queryset
+                        .distinct()
+                        .order_by(order_by)
+                        .values_list(field.name, flat=True))
+        if not self.order_by:
+            # original from AllValuesFieldListFilter.__init__
+            return choice_query
+        else:
+            return OrderedDict([(choice, 1)
+                                for choice in choice_query]).keys()
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        """
+        Copied verbatim from AllValuesFieldListFilter.__init__
+        except for call to lookups
+        """
+        self.lookup_kwarg = field_path
+        self.lookup_kwarg_isnull = '%s__isnull' % field_path
+        self.lookup_val = request.GET.get(self.lookup_kwarg)
+        self.lookup_val_isnull = request.GET.get(self.lookup_kwarg_isnull)
+        self.empty_value_display = model_admin.get_empty_value_display()
+        parent_model, reverse_path = reverse_field_path(model, field_path)
+        # Obey parent ModelAdmin queryset when deciding which options to show
+        if model == parent_model:
+            queryset = model_admin.get_queryset(request)
+        else:
+            queryset = parent_model._default_manager.all()
+        self.lookup_choices = self.lookups(queryset, field)
+        super(AllValuesFieldListFilter, self).__init__(
+            field, request, params, model, model_admin, field_path)
+
     def queryset(self, request, queryset):
         """
         This handles multi-value options as comma-separated lists
@@ -206,6 +244,7 @@ class TextInputFilter(SimpleListFilter):
     title = ""
     parameter_name = ""
     template = "admin/textinputfilter.html"
+    accept_multiple = False
 
     def lookups(self, request, model_admin):
         return (('1', '1'),)
@@ -213,15 +252,19 @@ class TextInputFilter(SimpleListFilter):
     def queryset(self, request, queryset):
         val = self.value()
         if val:
-            key = '%s__icontains' % self.parameter_name
+            if self.accept_multiple:
+                key = '%s__in' % self.parameter_name
+                val = [x.strip() for x in val.split(',')]
+            else:
+                key = '%s__icontains' % self.parameter_name
             queryset = queryset.filter(**{key:val})
         return queryset
 
-def textinputfilter_factory(title, parameter_name):
+def textinputfilter_factory(title, parameter_name, accept_multiple=False):
 
     class newclass(TextInputFilter):
         pass
-
     newclass.title = title
     newclass.parameter_name = parameter_name
+    newclass.accept_multiple = accept_multiple
     return newclass

@@ -12,7 +12,7 @@
         <tr>
           {% for header in result_headers %}
             <th scope="col" {{ header.class_attrib }}>
-             {% if header.sortable %}
+             <!-- {% if header.sortable %}
                {% if header.sort_priority > 0 %}
                  <div class="sortoptions">
                    <a class="sortremove" href="{{ header.url_remove }}" title="{% trans "Remove from sorting" %}"></a>
@@ -20,7 +20,7 @@
                    <a href="{{ header.url_toggle }}" class="toggle {% if header.ascending %}ascending{% else %}descending{% endif %}" title="{% trans "Toggle sorting" %}"></a>
                  </div>
                {% endif %}
-             {% endif %}
+             {% endif %} -->
              <div class="text">{% if header.sortable %}<a href="{{ header.url_primary }}">{{ header.text|capfirst }}</a>{% else %}<span>{{ header.text|capfirst }}</span>{% endif %}</div>
              <div class="clear"></div>
           </th>{% endfor %}
